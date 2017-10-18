@@ -125,20 +125,20 @@ void WritingVisitor::Visit(Template *object, CDC *cPaintDc) {
 
 void WritingVisitor::Visit(ClassName* className, CDC* cPaintDc) {
 	RECT rt = { className->GetX() + GabX , className->GetY() + MemoGab + GabY, className->GetX() + className->GetWidth() - GabX, className->GetY() + className->GetHeight() - GabY };
-	cPaintDc->DrawText((CString)className->GetContent().c_str(), &rt, DT_CENTER | DT_NOCLIP | DT_EXPANDTABS);
+	cPaintDc->DrawText((CString)className->GetContent().c_str(), &rt, DT_CENTER  | DT_EXPANDTABS);
 }
 
 void WritingVisitor::Visit(Attribute* attribute, CDC* cPaintDc) {
 	RECT rt = { attribute->GetX() + GabX , attribute->GetY() + GabY, attribute->GetX() + attribute->GetWidth() - GabX, attribute->GetY() + attribute->GetHeight() - GabY };
-	cPaintDc->DrawText((CString)attribute->GetContent().c_str(), &rt, DT_NOCLIP | DT_EXPANDTABS);
+	cPaintDc->DrawText((CString)attribute->GetContent().c_str(), &rt,   DT_EXPANDTABS);
 }
 void WritingVisitor::Visit(Method* method, CDC* cPaintDc) {
 	RECT rt = { method->GetX() + GabX , method->GetY() + GabY, method->GetX() + method->GetWidth() - GabX, method->GetY() + method->GetHeight() - GabY };
-	cPaintDc->DrawText((CString)method->GetContent().c_str(), &rt, DT_NOCLIP | DT_EXPANDTABS);
+	cPaintDc->DrawText((CString)method->GetContent().c_str(), &rt,   DT_EXPANDTABS);
 }
 void WritingVisitor::Visit(Reception* reception, CDC* cPaintDc) {
 	RECT rt = { reception->GetX() + GabX , reception->GetY() + GabY, reception->GetX() + reception->GetWidth() - GabX, reception->GetY() + reception->GetHeight() - GabX };
-	cPaintDc->DrawText((CString)reception->GetContent().c_str(), &rt, DT_NOCLIP | DT_EXPANDTABS);
+	cPaintDc->DrawText((CString)reception->GetContent().c_str(), &rt,   DT_EXPANDTABS);
 }
 
 void WritingVisitor::Visit(Line *line, CDC* cPaintDc) {
