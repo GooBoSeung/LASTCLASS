@@ -705,7 +705,7 @@ void ClassDiagramForm::OnPaint() {
 	pOldBitmap = memDC.SelectObject(&bitmap);
 	memDC.FillSolidRect(CRect(0, 0, 4000 * this->zoomRate / 100, 2000 * this->zoomRate / 100), RGB(255, 255, 255));
 	CFont cFont;//CreateFont에 값18을 textEdit의 rowHight로 바꿔야함
-	int ih = -MulDiv(14 * this->zoomRate / 100, GetDeviceCaps(dc, LOGPIXELSY), 72);
+	int ih = MulDiv(14 * this->zoomRate / 100, GetDeviceCaps(dc, LOGPIXELSY), 72);
 	cFont.CreateFont(ih, 0, 0, 0, FW_NORMAL, FALSE, FALSE, 0, DEFAULT_CHARSET,// 글꼴 설정
 		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, "굴림체");
 	SetFont(&cFont, TRUE);
@@ -904,7 +904,7 @@ BOOL ClassDiagramForm::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) {
 	CWnd::SetFocus();
 	SetFocus();
 	bool ret = false;
-
+	Long zoomRate_ = this->zoomRate;
 	// nWheelScrollLines 휠 한번에 이동하는 줄 수 (Reg에서 읽어 온다)
 	HKEY hKey = 0;
 	DWORD dwType = REG_BINARY;
@@ -1047,8 +1047,10 @@ BOOL ClassDiagramForm::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) {
 		oldFont = dc.SelectObject(&font);
 		dc.SelectObject(oldFont);
 		font.DeleteObject();
-		this->lastClass->statusBar->DestroyStatus();
-		this->lastClass->statusBar->MakeStatusBar(this->lastClass, this->lastClass->GetSafeHwnd(), 0, 0, 5);
+		if ((zoomRate_!=70 ||this->zoomRate!=70)&& (zoomRate_ != 130 || this->zoomRate != 130)) {
+			this->lastClass->statusBar->DestroyStatus();
+			this->lastClass->statusBar->MakeStatusBar(this->lastClass, this->lastClass->GetSafeHwnd(), 0, 0, 5);
+		}
 	}
 	ret = true;
 
