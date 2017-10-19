@@ -49,7 +49,6 @@
 #include "ScrollAction.h"
 #include "GraphicCtrlCopyKey.h"
 #include "ResizeVisitor.h"
-
 #include <math.h>
 #include <iostream>
 #include <fstream>
@@ -101,6 +100,7 @@ ClassDiagramForm::ClassDiagramForm(LastClass *lastClass) { // 생성자 맞는듯
 	this->fileName = "";
 	this->copyBuffer = NULL;
 	this->isCut = 0;
+	this->preZoom = 100;
 	this->capsLockFlag = 0;
 	this->numLockFlag = 0;
 	this->zoomRate = 100;
@@ -703,8 +703,9 @@ void ClassDiagramForm::OnPaint() {
 	pOldBitmap = memDC.SelectObject(&bitmap);
 	memDC.FillSolidRect(CRect(0, 0, 4000 * this->zoomRate / 100, 2000 * this->zoomRate / 100), RGB(255, 255, 255));
 	CFont cFont;//CreateFont에 값18을 textEdit의 rowHight로 바꿔야함
-	cFont.CreateFont(25 * this->zoomRate / 100, 0, 0, 0, FW_BOLD, FALSE, FALSE, 0, DEFAULT_CHARSET,// 글꼴 설정
-		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, "맑은 고딕");
+	int ih = -MulDiv(14 * this->zoomRate / 100, GetDeviceCaps(dc, LOGPIXELSY), 72);
+	cFont.CreateFont(ih, 0, 0, 0, FW_NORMAL, FALSE, FALSE, 0, DEFAULT_CHARSET,// 글꼴 설정
+		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, "굴림체");
 	SetFont(&cFont, TRUE);
 	CFont *oldFont = memDC.SelectObject(&cFont);
 
@@ -719,15 +720,7 @@ void ClassDiagramForm::OnPaint() {
 
 	int vertCurPos = GetScrollPos(SB_VERT);
 	int horzCurPos = GetScrollPos(SB_HORZ);
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	////// 좌표 안맞출거면 밑에 3줄 주석해야함
-	//dc.SetMapMode(MM_ISOTROPIC);
-	//dc.SetWindowExt(100, 100);
-	//dc.SetViewportExt(this->zoomRate, this->zoomRate);
-
 	dc.BitBlt(0, 0, rect.right, rect.bottom, &memDC, horzCurPos, vertCurPos, SRCCOPY);
-
 }
 
 void ClassDiagramForm::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
@@ -758,8 +751,8 @@ void ClassDiagramForm::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
 
 	CClientDC dc(this);
 	CFont cFont;//CreateFont에 값18을 textEdit의 rowHight로 바꿔야함
-	cFont.CreateFont(25 * this->zoomRate / 100, 0, 0, 0, FW_BOLD, FALSE, FALSE, 0, DEFAULT_CHARSET,// 글꼴 설정
-		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, "맑은 고딕");
+	cFont.CreateFont(14 * this->zoomRate / 100*120/72, 0, 0, 0, FW_NORMAL, FALSE, FALSE, 0, ANSI_CHARSET,// 글꼴 설정
+		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, "굴림체");
 	SetFont(&cFont, TRUE);
 	CFont *oldFont = dc.SelectObject(&cFont);
 	KeyAction *keyAction = this->keyBoard->KeyDown(this, nChar, nRepCnt, nFlags);
@@ -909,7 +902,7 @@ BOOL ClassDiagramForm::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) {
 	CWnd::SetFocus();
 	SetFocus();
 	bool ret = false;
-	
+
 	// nWheelScrollLines 휠 한번에 이동하는 줄 수 (Reg에서 읽어 온다)
 	HKEY hKey = 0;
 	DWORD dwType = REG_BINARY;
@@ -937,9 +930,9 @@ BOOL ClassDiagramForm::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) {
 		ret = true;
 	}
 	else {
-		Long previousZoomRate;
+		//Long previousZoomRate;
 		Long nextZoomRate;
-		previousZoomRate = this->zoomRate;
+		this->preZoom = this->zoomRate;
 		if (zDelta <= 0) { //마우스 휠 다운
 			this->zoomRate -= 10;
 			if (this->zoomRate < 70) {
@@ -948,16 +941,16 @@ BOOL ClassDiagramForm::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) {
 		}
 		else {  //마우스 휠 업
 			this->zoomRate += 10;
-			if (this->zoomRate > 150) {
-				this->zoomRate = 150;
+			if (this->zoomRate > 130) {
+				this->zoomRate = 130;
 			}
 		}
 		nextZoomRate = this->zoomRate;
 
 		this->SetMemoGab(20 * this->zoomRate / 100);
-		this->SetGabX(13 * this->zoomRate / 100);
-		this->SetGabY(2 * this->zoomRate / 100);
-		this->SetCaretWidth(2 * this->zoomRate / 100);
+		this->SetGabX(8 * this->zoomRate / 100);
+		//this->SetGabY(2 * this->zoomRate / 100);
+		this->SetCaretWidth(2);
 
 		SCROLLINFO vScinfo;
 		SCROLLINFO hScinfo;
@@ -979,25 +972,89 @@ BOOL ClassDiagramForm::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) {
 			hScinfo.nPos = hScinfo.nMax - hScinfo.nPage;
 		}
 		this->SetScrollInfo(SB_VERT, &vScinfo);
-		this->SetScrollInfo(SB_HORZ, &hScinfo);
+		this->SetScrollInfo(SB_HORZ, &hScinfo);	
 
-		CDC memDC; 
-		ResizeVisitor resizeVisitor(previousZoomRate, nextZoomRate);
+		CDC memDC;
+		ResizeVisitor resizeVisitor(this->preZoom, nextZoomRate);
 		this->diagram->Accept(resizeVisitor, &memDC);
 
 		if (this->copyBuffer != NULL) {
 			this->copyBuffer->Accept(resizeVisitor, &memDC);
 		}
-		////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////
+		int vertCurPos = GetScrollPos(SB_VERT);
+		int horzCurPos = GetScrollPos(SB_HORZ);
+
+		Long i = 0;
+		Long j;
+		while (i < this->diagram->GetLength()) {
+			if (dynamic_cast<Class*>(this->diagram->GetAt(i))) { // 클래스이면
+				Class* testClass = static_cast<Class*>(this->diagram->GetAt(i));
+				this->selection->Add(testClass);
+				j = 0;
+				while (j < testClass->GetLength()) {
+					Figure* figure = testClass->GetAt(j);
+					if ((dynamic_cast<Attribute*>(figure) || dynamic_cast<Method*>(figure)
+						|| dynamic_cast<Reception*>(figure)) && figure->GetContent() != "") {
+						this->textEdit = new TextEdit(this, figure);
+						this->textEdit->Create(NULL, "textEdit", WS_CHILD | WS_VISIBLE, CRect(
+							figure->GetX() + GabX - horzCurPos,
+							figure->GetY() + GabY - vertCurPos,
+							figure->GetX() + figure->GetWidth() - GabX - horzCurPos,
+							figure->GetY() + figure->GetHeight() - GabY - vertCurPos), this, 10000, NULL);
+						this->textEdit->OnKeyDown(VK_CONTROL, 0, 0);
+						this->textEdit->OnClose();
+					}
+					else if (dynamic_cast<ClassName*>(figure) && figure->GetContent() != "") {
+						this->textEdit = new TextEdit(this, figure);
+						this->textEdit->Create(NULL, "textEdit", WS_CHILD | WS_VISIBLE, CRect(
+							figure->GetX() + GabX - horzCurPos,
+							figure->GetY() + GabY + MemoGab - vertCurPos,
+							figure->GetX() + figure->GetWidth() - GabX - horzCurPos,
+							figure->GetY() + figure->GetHeight() - GabY - vertCurPos), this, 10000, NULL);
+						this->textEdit->OnKeyDown(VK_CONTROL, 0, 0);
+						this->textEdit->OnClose();
+					}
+					j++;
+				}
+			}
+			else if (dynamic_cast<MemoBox*>(this->diagram->GetAt(i)) && this->diagram->GetAt(i)->GetContent() != "") {
+				this->textEdit = new TextEdit(this, this->diagram->GetAt(i));
+				this->textEdit->Create(NULL, "textEdit", WS_CHILD | WS_VISIBLE, CRect(
+					this->diagram->GetAt(i)->GetX() + GabX - horzCurPos,
+					this->diagram->GetAt(i)->GetY() + GabY + MemoGab - vertCurPos,
+					this->diagram->GetAt(i)->GetX() + this->diagram->GetAt(i)->GetWidth() - GabX - horzCurPos,
+					this->diagram->GetAt(i)->GetY() + this->diagram->GetAt(i)->GetHeight() - GabY - vertCurPos), this, 10000, NULL);
+				this->textEdit->OnKeyDown(VK_CONTROL, 0, 0);
+				this->textEdit->OnClose();
+			}
+			i++;
+			this->selection->DeleteAllItems();
+		}
+
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		CPaintDC dc(this);
+		CFont font;
+		
+		font.CreateFont(14 * this->zoomRate / 100*120/72, 0, 0, 0, FW_NORMAL, FALSE, FALSE, 0, DEFAULT_CHARSET,// 글꼴 설정
+			OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, "굴림체");
+		CFont*  oldFont;
+		oldFont = dc.SelectObject(&font);
+		dc.SelectObject(oldFont);
+		font.DeleteObject();
 		this->lastClass->statusBar->DestroyStatus();
 		this->lastClass->statusBar->MakeStatusBar(this->lastClass, this->lastClass->GetSafeHwnd(), 0, 0, 5);
-		ret = true;
 	}
+	ret = true;
+
 	SetScrollPos(SB_VERT, vertCurPos);
 	Invalidate(false);
-
 	return ret;
 }
+	
+
+	
+
 void ClassDiagramForm::OnNcMouseMove(UINT nHitTest, CPoint point) {
 
 	CRect rect;
