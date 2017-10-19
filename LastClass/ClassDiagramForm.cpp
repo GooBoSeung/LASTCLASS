@@ -109,6 +109,8 @@ ClassDiagramForm::ClassDiagramForm(LastClass *lastClass) { // 생성자 맞는듯
 	this->startY_ = 0;
 	this->currentX_ = 0;
 	this->currentY_ = 0;
+	this->thirty = 30;
+	this->seventeen = 17;
 }
 
 Long ClassDiagramForm::Load() {
@@ -951,6 +953,9 @@ BOOL ClassDiagramForm::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) {
 		this->SetGabX(8 * this->zoomRate / 100);
 		//this->SetGabY(2 * this->zoomRate / 100);
 		this->SetCaretWidth(2);
+
+		this->thirty = this->thirty*this->zoomRate / this->preZoom;
+		this->seventeen = this->seventeen*this->zoomRate / this->preZoom;
 
 		SCROLLINFO vScinfo;
 		SCROLLINFO hScinfo;
