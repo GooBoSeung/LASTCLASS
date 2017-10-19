@@ -494,6 +494,9 @@ Long Selection::SelectByPoint(Long x, Long y) {
 				}
 			}
 		}
+		if (dynamic_cast<SelfRelation*>(this->GetAt(i))) {
+			index = 6;
+		}
 		i++;
 	}
 	return index;

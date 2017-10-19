@@ -49,7 +49,6 @@ int PrintPreview::OnCreate(LPCREATESTRUCT lpCreateStruct) {
    CFrameWnd::OnCreate(lpCreateStruct);
   
    this->printPreviewButton = new PrintPreviewButton;
-
    this->ModifyStyle(0, WS_OVERLAPPEDWINDOW  );
    this->nextButton = new CButton;
    this->nextButton->Create("다음 페이지", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_CENTER | BS_VCENTER, CRect(775, 10, 925, 50), this, 1);

@@ -23,6 +23,7 @@
 #include "DrawingRelationPoint.h"
 #include "DrawingResizing.h"
 #include "MultipleSelectionState.h"
+#include "MovingSelfRelation.h"
 SelectionState* SelectionState::instance = 0;
 
 MouseLButtonAction* SelectionState::Instance() {
@@ -80,6 +81,9 @@ void SelectionState::MouseLButtonDown(MouseLButton *mouseLButton, Diagram *diagr
 		if (index == 5) { // 내부 선이동
 			this->ChangeState(mouseLButton, MovingLine::Instance());
 		}
+		if (index == 6) {
+			this->ChangeState(mouseLButton, MovingSelfRelation::Instance());
+		}
 		if (index == -1) {
 			selection->DeleteAllItems();
 			selection->SelectByPoint(diagram, startX, startY);
@@ -110,10 +114,13 @@ void SelectionState::MouseLButtonDrag(MouseLButton *mouseLButton, Diagram *diagr
 		if (index == 4 || index ==3 || index== 5) { // 기호 이동
 			this->ChangeState(mouseLButton, MovingObject::Instance());
 		}
-		
-		if (index == -1) {
+		if (index == 6) {
+			this->ChangeState(mouseLButton, MovingSelfRelation::Instance());
+		}
+			if (index == -1) {
 			this->ChangeDefault(mouseLButton);
 		}
+		
 	}
 
 }
