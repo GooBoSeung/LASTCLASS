@@ -23,6 +23,7 @@
 #include "DrawingRelationPoint.h"
 #include "DrawingResizing.h"
 #include "MultipleSelectionState.h"
+#include "SelfRelation.h"
 #include "MovingSelfRelation.h"
 SelectionState* SelectionState::instance = 0;
 
@@ -73,6 +74,9 @@ void SelectionState::MouseLButtonDown(MouseLButton *mouseLButton, Diagram *diagr
 	else if (object == 51) {
 		this->ChangeState(mouseLButton, DrawingRealization::Instance(), 51);
 	}
+	else if (object == 87) {
+		this->ChangeState(mouseLButton, DrawingMemoLine::Instance(), 87);
+	}
 	if (GetKeyState(VK_SHIFT) >= 0) {
 		Long index = selection->SelectByPoint(startX, startY);
 		if (index == 3) { // 크기조절
@@ -100,8 +104,9 @@ void SelectionState::MouseLButtonDown(MouseLButton *mouseLButton, Diagram *diagr
 void SelectionState::MouseLButtonDrag(MouseLButton *mouseLButton, Diagram *diagram, Selection *selection, Long  startX, Long startY, Long currentX, Long currentY, CDC *pDC) {
 	if (startX != currentX && startY != currentY) {
 		Long index = selection->SelectByPoint(startX, startY);
-		Figure *figure = selection->GetAt(0);
-
+		if (dynamic_cast<SelfRelation*>(selection->GetAt(0))) {
+			index = 6;
+			}
 
 
 		if (index == 1) { // 끝점이동
@@ -117,7 +122,7 @@ void SelectionState::MouseLButtonDrag(MouseLButton *mouseLButton, Diagram *diagr
 		if (index == 6) {
 			this->ChangeState(mouseLButton, MovingSelfRelation::Instance());
 		}
-			if (index == -1) {
+		if (index == -1) {
 			this->ChangeDefault(mouseLButton);
 		}
 		

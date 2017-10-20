@@ -863,6 +863,7 @@ Long Selection::SelectByPoint(Diagram *diagram, Long x, Long y) {
 						ret = finder.FindLineByPoint(lineStart, lineEnd, x, y);
 					}
 				}
+
 				//여기 부터 바깥 사각박스 찾기
 				if (dynamic_cast<SelfDirectedAssociation*>(selfRelation) || dynamic_cast<SelfAssociation*>(selfRelation) ||
 					dynamic_cast<SelfAggregation*>(selfRelation) || dynamic_cast<SelfAggregations*>(selfRelation)) {
